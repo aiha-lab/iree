@@ -250,6 +250,7 @@ cmake_dependent_option(IREE_TARGET_BACKEND_LLVM_CPU "Enables the 'llvm-cpu' comp
 cmake_dependent_option(IREE_TARGET_BACKEND_LLVM_CPU_WASM "Enables WebAssembly in the 'llvm-cpu' compiler target backend" ${IREE_TARGET_BACKEND_DEFAULTS} ${IREE_TARGET_BACKEND_LLVM_CPU} OFF)
 cmake_dependent_option(IREE_TARGET_BACKEND_METAL_SPIRV "Enables the 'metal-spirv' compiler target backend" ${IREE_TARGET_BACKEND_DEFAULTS} ${IREE_BUILD_COMPILER} OFF)
 cmake_dependent_option(IREE_TARGET_BACKEND_VULKAN_SPIRV "Enables the 'vulkan-spirv' compiler target backend" ${IREE_TARGET_BACKEND_DEFAULTS} ${IREE_BUILD_COMPILER} OFF)
+cmake_dependent_option(IREE_TARGET_BACKEND_NEWTON "Enables the 'newton' compiler target backend" ${IREE_TARGET_BACKEND_DEFAULTS} ${IREE_BUILD_COMPILER} OFF)
 
 # Supported default target backends that are only available on certain
 # platforms.

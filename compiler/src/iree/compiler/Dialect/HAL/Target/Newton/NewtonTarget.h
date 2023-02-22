@@ -22,4 +22,4 @@ void registerNewtonTargetBackends();
 }  // namespace iree_compiler
 }  // namespace mlir
 
-#endif  // IREE_COMPILER_DIALECT_HAL_TARGET_Newton_NEWTONTARGET_H_
+#endif  // IREE_COMPILER_DIALECT_HAL_TARGET_NEWTON_NEWTONTARGET_H_

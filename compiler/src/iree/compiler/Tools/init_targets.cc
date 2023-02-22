@@ -29,6 +29,9 @@
 #ifdef IREE_HAVE_WEBGPU_TARGET
 #include "iree/compiler/Dialect/HAL/Target/WebGPU/WebGPUTarget.h"
 #endif  // IREE_HAVE_WEBGPU_TARGET
+#ifdef IREE_HAVE_NEWTON_TARGET
+#include "iree/compiler/Dialect/HAL/Target/Newton/NewtonTarget.h"
+#endif  // IREE_HAVE_NEWTON_TARGET
 
 namespace mlir {
 namespace iree_compiler {
@@ -64,6 +67,10 @@ void registerHALTargetBackends() {
     IREE::HAL::registerWebGPUTargetBackends(
         []() { return IREE::HAL::getWebGPUTargetOptionsFromFlags(); });
 #endif  // IREE_HAVE_WEBGPU_TARGET
+#ifdef IREE_HAVE_NEWTON_TARGET
+    IREE::HAL::registerNewtonTargetBackends();
+#endif  // IREE_HAVE_NEWTON_TARGET
+
     return true;
   }();
   (void)init_once;
