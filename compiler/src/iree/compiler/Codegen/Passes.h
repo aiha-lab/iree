@@ -656,6 +656,19 @@ void buildVMVXLinkingPassPipeline(OpPassManager &passManager);
 std::unique_ptr<OperationPass<func::FuncOp>>
 createWGSLReplacePushConstantsPass();
 
+//----------------------------------------------------------------------------//
+// PIM Codegen Pass Pipelines.
+//----------------------------------------------------------------------------//
+
+/// Populates passes needed to lower linalg/arith/math ops to PIM ops via
+/// the structured ops path. The pass manager `pm` here operate on the module
+/// within the IREE::HAL::ExecutableOp.
+void buildPIMCodegenPassPipeline(OpPassManager &pm);
+std::unique_ptr<OperationPass<ModuleOp>> createConvertToPIMPass();
+std::unique_ptr<OperationPass<IREE::HAL::ExecutableVariantOp>>
+createPIMLowerExecutableTargetPass();
+void addPIMMatmulPassPipeline(OpPassManager &pm);
+
 //------------------------------------------------------------------------------
 // Test passes
 //------------------------------------------------------------------------------

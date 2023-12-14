@@ -671,6 +671,23 @@ def WGSLReplacePushConstants :
 }
 
 //------------------------------------------------------------------------------
+// PIM Passes
+//------------------------------------------------------------------------------
+
+def ConvertToPIM : Pass<"iree-convert-to-pim", "ModuleOp"> {
+  let summary = "Perform the operation conversion to PIM dialect";
+  let constructor = "mlir::iree_compiler::createConvertToPIMPass()";
+}
+
+
+def PIMLowerExecutableTarget :
+    Pass<"iree-pim-lower-executable-target", "mlir::iree_compiler::IREE::HAL::ExecutableVariantOp"> {
+  let summary = "Perform lowering of executable target using one of the IREE::HAL::DispatchLoweringPassPipeline";
+  let constructor = "mlir::iree_compiler::createPIMLowerExecutableTargetPass()";
+} 
+
+
+//------------------------------------------------------------------------------
 // Test Passes
 //------------------------------------------------------------------------------
 

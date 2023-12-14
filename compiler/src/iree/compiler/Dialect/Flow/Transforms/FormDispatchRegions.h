@@ -8,6 +8,7 @@
 #define IREE_COMPILER_DIALECT_FLOW_TRANSFORMS_FORMDISPATCHREGIONS_H_
 
 #include "iree/compiler/Dialect/Flow/Transforms/ConvertRegionToWorkgroups.h"
+#include "mlir/IR/FunctionInterfaces.h"
 #include "mlir/Dialect/Tensor/IR/Tensor.h"
 #include "mlir/IR/Dominance.h"
 
@@ -40,6 +41,7 @@ namespace Flow {
 /// into a dispatch region.
 bool isClonableIntoDispatchOp(Operation *op);
 
+void GenerateMetaData(FunctionOpInterface funcOp);
 /// Computes the workload and provides a workload region builder for the given
 /// root op.
 FailureOr<Flow::WorkloadBuilder> getWorkloadBuilder(OpBuilder &builder,

@@ -192,6 +192,7 @@ cc_library(
         "IREE_HAVE_ROCM_TARGET",
         "IREE_HAVE_VMVX_TARGET",
         "IREE_HAVE_VULKANSPIRV_TARGET",
+        "IREE_HAVE_PIM_TARGET",
     ] + select({
         ":cuda_enabled": ["IREE_HAVE_CUDA_TARGET"],
         "//conditions:default": [],
@@ -202,6 +203,7 @@ cc_library(
         "//compiler/src/iree/compiler/Dialect/HAL/Target/ROCM",
         "//compiler/src/iree/compiler/Dialect/HAL/Target/VMVX",
         "//compiler/src/iree/compiler/Dialect/HAL/Target/VulkanSPIRV",
+        "//compiler/src/iree/compiler/Dialect/HAL/Target/PIM",
     ] + select({
         ":cuda_enabled": ["//compiler/src/iree/compiler/Dialect/HAL/Target/CUDA"],
         "//conditions:default": [],

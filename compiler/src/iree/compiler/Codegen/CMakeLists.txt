@@ -34,6 +34,7 @@ iree_cc_library(
     iree::compiler::Codegen::Dialect::IREECodegenDialect
     iree::compiler::Dialect::HAL::IR
     iree::compiler::Utils
+    iree::compiler::Dialect::PIM::IR
   PUBLIC
 )
 
@@ -53,6 +54,7 @@ iree_cc_library(
     iree::compiler::Codegen::Sandbox
     iree::compiler::Codegen::VMVX
     iree::compiler::Codegen::WGSL
+    iree::compiler::Codegen::PIM
   PUBLIC
 )
 

@@ -11,6 +11,7 @@
 #include "iree/compiler/Dialect/HAL/IR/HALOps.h"
 #include "iree/compiler/Dialect/HAL/Target/TargetBackend.h"
 #include "iree/compiler/Dialect/HAL/Target/TargetRegistry.h"
+#include "iree/compiler/Dialect/HAL/Transforms/Passes.h"
 #include "iree/compiler/Utils/TracingUtils.h"
 #include "llvm/ADT/StringSet.h"
 #include "mlir/Dialect/Bufferization/IR/Bufferization.h"
@@ -24,6 +25,8 @@ namespace mlir {
 namespace iree_compiler {
 namespace IREE {
 namespace HAL {
+
+std::vector<std::string> op_pattern;
 
 class TranslateTargetExecutableVariantsPass
     : public PassWrapper<TranslateTargetExecutableVariantsPass,
@@ -55,6 +58,12 @@ class TranslateTargetExecutableVariantsPass
 
   void runOnOperation() override {
     auto variantOp = getOperation();
+    // auto module = getModule();
+    // extern std::vector<std::string> g_ffn_pattern;
+    /*
+    for (const auto &opName : g_ffn_pattern) {
+      llvm::outs() << opName << " ";
+    }*/
     if (variantOp.getTarget().getBackend().getValue() != target) return;
 
     auto targetBackend = getTargetBackend(target);

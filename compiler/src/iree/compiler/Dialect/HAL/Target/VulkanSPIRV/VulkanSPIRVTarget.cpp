@@ -33,6 +33,8 @@
 #include "mlir/IR/SymbolTable.h"
 #include "mlir/Target/SPIRV/Serialization.h"
 
+#include <iostream>
+
 namespace mlir {
 namespace iree_compiler {
 namespace IREE {
@@ -123,6 +125,7 @@ class VulkanSPIRVTargetBackend : public TargetBackend {
     buildSPIRVCodegenPassPipeline(passManager, /*enableFastMath=*/false);
   }
 
+  
   LogicalResult serializeExecutable(const SerializationOptions &options,
                                     IREE::HAL::ExecutableVariantOp variantOp,
                                     OpBuilder &executableBuilder) override {
@@ -150,6 +153,13 @@ class VulkanSPIRVTargetBackend : public TargetBackend {
     if (failed(spirv::serialize(spvModuleOp, spvBinary)) || spvBinary.empty()) {
       return variantOp.emitError() << "failed to serialize spirv.module";
     }
+    /*
+    std::cout<<"\n";
+    std::cout<<"\n Generated spvBinary code : ";
+    for (uint32_t i: spvBinary)
+      std::cout << std::hex << i << ' ';
+    std::cout<<"\n";
+    */
     if (!options.dumpBinariesPath.empty()) {
       dumpDataToPath<uint32_t>(options.dumpBinariesPath, options.dumpBaseName,
                                variantOp.getName(), ".spv", spvBinary);

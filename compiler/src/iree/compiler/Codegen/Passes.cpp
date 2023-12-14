@@ -63,6 +63,14 @@ void registerCodegenPasses() {
       [](OpPassManager &passManager) {
         buildVMVXLinkingPassPipeline(passManager);
       });
+  
+  static PassPipelineRegistration<> PIMPipeline(
+      "iree-codegen-pim-pipeline",
+      "Runs the PIM executable linking pipeline",
+      [](OpPassManager &passManager) {
+        buildPIMCodegenPassPipeline(passManager);
+      });
+
 }
 
 /// Hook to verify the lowering configuration and translation info for an

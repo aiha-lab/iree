@@ -855,29 +855,36 @@ static LogicalResult setConvolutionConfig(linalg::LinalgOp linalgOp,
 
 static LogicalResult setRootConfig(func::FuncOp entryPointFn,
                                    Operation *computeOp) {
+  llvm::outs() << "setRootConfig\n";
   TargetInfo targetInfo = getTargetInfo(entryPointFn);
   if (IREE::Codegen::CompilationInfoAttr compilationInfo =
           getCompilationInfo(computeOp)) {
     // If the op already has a lowering config coming from the IR use this and
     // bypass the heuristic.
+    llvm::outs() << "compilationInfo\n";
     return setUserConfig(entryPointFn, computeOp, compilationInfo);
   }
   if (auto linalgOp = dyn_cast<linalg::LinalgOp>(computeOp)) {
     if (succeeded(setReductionTransformDialectConfig(entryPointFn, linalgOp,
                                                      targetInfo))) {
+      llvm::outs() << "setReductionTransformDialectConfig\n";
       return success();
     }
     if (succeeded(setContractConfig(entryPointFn, linalgOp, targetInfo))) {
+      llvm::outs() << "setContractConfig\n";
       return success();
     }
     if (succeeded(setWarpReductionConfig(entryPointFn, linalgOp, targetInfo))) {
+      llvm::outs() << "setWarpReductionConfig\n";
       return success();
     }
     if (succeeded(setConvolutionConfig(linalgOp, 32, 16))) {
+      llvm::outs() << "setConvolutionConfig\n";
       return success();
     }
     auto genericOp = dyn_cast<linalg::GenericOp>(computeOp);
     if (genericOp && succeeded(setTransposeConfig(entryPointFn, genericOp))) {
+      llvm::outs() << "setTransposeConfig\n";
       return success();
     }
   }
@@ -890,15 +897,19 @@ static LogicalResult setRootConfig(func::FuncOp entryPointFn,
     auto translationInfo = IREE::Codegen::TranslationInfoAttr::get(
         entryPointFn.getContext(),
         IREE::Codegen::DispatchLoweringPassPipeline::TransformDialectCodegen);
+    llvm::outs() << "setTranslationInfo\n";
     return setTranslationInfo(entryPointFn, translationInfo);
   }
 
   if (auto fftOp = dyn_cast<IREE::LinalgExt::FftOp>(computeOp)) {
+    llvm::outs() << "setFftConfig\n";
     return setFftConfig(entryPointFn, fftOp);
   }
   if (auto sortOp = dyn_cast<IREE::LinalgExt::SortOp>(computeOp)) {
+    llvm::outs() << "setSortConfig\n";
     return setSortConfig(entryPointFn, sortOp);
   }
+  llvm::outs() << "setRootDefaultConfig\n";
   return setRootDefaultConfig(entryPointFn, computeOp);
 }
 
@@ -949,7 +960,16 @@ LogicalResult initGPULaunchConfig(ModuleOp moduleOp) {
       continue;
     }
 
+    // DBG
+    llvm::outs() << "Root operation: ";
+    rootOperation->print(llvm::outs());
+    llvm::outs() << "\n";
+
     if (failed(setRootConfig(funcOp, rootOperation))) continue;
+
+    llvm::outs() << "Root operation(setRootConfig): ";
+    rootOperation->print(llvm::outs());
+    llvm::outs() << "\n";
 
     // Propogate the configuration to the other ops.
     // TODO(ravishankarm, thomasraoux): This is a very specific use (and

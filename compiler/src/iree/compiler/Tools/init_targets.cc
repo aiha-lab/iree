@@ -29,6 +29,9 @@
 #ifdef IREE_HAVE_WEBGPU_TARGET
 #include "iree/compiler/Dialect/HAL/Target/WebGPU/WebGPUTarget.h"
 #endif  // IREE_HAVE_WEBGPU_TARGET
+#ifdef IREE_HAVE_PIM_TARGET
+#include "iree/compiler/Dialect/HAL/Target/PIM/PIMTarget.h"
+#endif  // IREE_HAVE_PIM_TARGET
 
 namespace mlir {
 namespace iree_compiler {
@@ -64,6 +67,10 @@ void registerHALTargetBackends() {
     IREE::HAL::registerWebGPUTargetBackends(
         []() { return IREE::HAL::getWebGPUTargetOptionsFromFlags(); });
 #endif  // IREE_HAVE_WEBGPU_TARGET
+#ifdef IREE_HAVE_PIM_TARGET
+    IREE::HAL::registerPIMTargetBackends();
+#endif  // IREE_HAVE_PIM_TARGET
+
     return true;
   }();
   (void)init_once;

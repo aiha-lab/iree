@@ -118,14 +118,23 @@ static LogicalResult verifyEntryPoint(
 }
 
 void LLVMGPULowerExecutableTargetPass::runOnOperation() {
+  // DBG
+  llvm::outs() << "LLVMGPULowerExecutableTargetPass::runOnOperation\n";
   IREE::HAL::ExecutableVariantOp variantOp = getOperation();
   ModuleOp moduleOp = variantOp.getInnerModule();
+  // DBG
+  moduleOp.print(llvm::outs());
+  llvm::outs() << "\n";
+
   OpPassManager executableLoweringPipeline(
       IREE::HAL::ExecutableVariantOp::getOperationName());
 
   if (failed(initGPULaunchConfig(moduleOp))) {
     return signalPassFailure();
   }
+  // DBG
+  moduleOp.print(llvm::outs());
+  llvm::outs() << "\n";
 
   // There might be multiple entry points in the module. Currently, all of
   // them need to have the same pipeline.

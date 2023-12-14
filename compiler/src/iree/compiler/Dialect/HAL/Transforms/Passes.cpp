@@ -176,6 +176,8 @@ void buildHALConfigurationPassPipeline(OpPassManager &passManager,
 void buildHALTransformPassPipeline(OpPassManager &passManager,
                                    const TargetOptions &targetOptions,
                                    const TransformOptions &transformOptions) {
+
+  // llvm::outs() << "buildHALTransformPassPipeline\n";
   //----------------------------------------------------------------------------
   // Device assignment and interface materialization
   //----------------------------------------------------------------------------
@@ -196,6 +198,7 @@ void buildHALTransformPassPipeline(OpPassManager &passManager,
   //
   // After this point the executables are opaque blobs and we cannot change
   // their interfaces.
+
   passManager.addNestedPass<IREE::HAL::ExecutableOp>(
       createTranslateExecutablesPass());
 

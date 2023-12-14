@@ -24,6 +24,7 @@
 #include "mlir/Dialect/Linalg/IR/Linalg.h"
 #include "mlir/Dialect/Linalg/Transforms/Transforms.h"
 #include "mlir/Dialect/Linalg/Utils/Utils.h"
+#include "mlir/Dialect/Math/IR/Math.h"
 #include "mlir/Dialect/SCF/IR/SCF.h"
 #include "mlir/Dialect/Tensor/IR/Tensor.h"
 #include "mlir/Dialect/Utils/StructuredOpsUtils.h"
@@ -40,6 +41,11 @@
 #include "mlir/Pass/Pass.h"
 #include "mlir/Support/LLVM.h"
 #include "mlir/Transforms/TopologicalSortUtils.h"
+#include "json/json.h"
+
+#include <fstream>
+#include <iostream>
+#include <string>
 
 #define DEBUG_TYPE "iree-flow-form-dispatch-regions"
 
@@ -527,8 +533,14 @@ static void fuseRootsWithConsumers(MLIRContext *context,
                                    ArrayRef<Operation *> roots,
                                    DominanceInfo const &dominanceInfo,
                                    bool aggressiveFusion) {
+  
+  // std::vector<std::string> rootPattern;
+  // std::vector<std::string> ffnPattern  = {"linalg.matmul", "linalg.matmul"};
   // Fuse with consumers where possible.
   for (Operation *root : roots) {
+
+    // rootPattern.push_back(root->getName().getStringRef().str());
+
     SmallVector<Operation *> workList;
     llvm::SmallBitVector rootOuterParallelLoops = getOuterParallelLoops(root);
     workList.push_back(root);
@@ -562,6 +574,13 @@ static void fuseRootsWithConsumers(MLIRContext *context,
         updateRootTo(consumerOp);
         workList.push_back(consumerOp);
       }
+      /*
+      if (rootPattern == ffnPattern) {
+        llvm::outs() << "Pattern matched!\n";
+        llvm::outs() << root->getName() << "\n";
+        updateRootTo(root);
+        workList.push_back(root);
+      }*/
     }
   }
 }
@@ -648,6 +667,8 @@ static unsigned decideFusableLinalgOps(FunctionOpInterface funcOp,
   unsigned numRootOps = 0;
   MLIRContext *context = funcOp->getContext();
   OpBuilder builder(context);
+  // SmallVector<Operation *> root_candidates;
+  
   for (Block &block : funcOp.getFunctionBody()) {
     // Dispatch region formation works by first cloning the root into
     // the dispatch region and then pulling operations in.
@@ -655,27 +676,69 @@ static unsigned decideFusableLinalgOps(FunctionOpInterface funcOp,
     // - First find the roots
     // - To fuse with consumers make the consumer the root.
     SmallVector<Operation *> roots;
+
+    /*
+    std::vector<std::string> linalgPattern;
+    std::vector<std::string> ffnPattern  = {"linalg.matmul", "linalg.matmul"};
+    unsigned indexToRemove;
+    
+    // Mark candidates of roots
+    for (Operation &op : llvm::reverse(block)) {
+      // Start with a root operation and fuse its producers.
+      if (hasFusionGroupsAttribute(&op) || !isRootOp(&op)) continue;
+      llvm::outs() << op.getName() << " is a root op candidate" << "\n";
+      root_candidates.push_back(&op);
+    }
+
+    llvm::outs() << "Pattern matching\n";
+    for (size_t i = 0; i < root_candidates.size(); ++i) {
+      llvm::outs() << "Root candidate " << i << "\n";
+      linalgPattern.push_back(root_candidates[i]->getName().getStringRef().str());
+      if (linalgPattern == ffnPattern) {
+        llvm::outs() << "FFN pattern matched!\n";
+
+        llvm::outs() << "setRootAttribute\n";
+        Operation* op = root_candidates[i];
+        llvm::outs() << op->getName() << " is a root op" << "\n";
+        unsigned newGroup = numRootOps++;
+        setRootAttribute(context, op, newGroup);
+        fuseRootsWithProducers(context, op, newGroup, dominanceInfo,
+                              aggressiveFusion);
+        roots.push_back(op);
+
+        // Operation* op_fused = root_candidates[i-1];
+        // appendToFusionGroup(op_fused, newGroup);
+      }
+    }*/
+    
     for (Operation &op : llvm::reverse(block)) {
       // Start with a root operation and fuse its producers.
       if (hasFusionGroupsAttribute(&op) || !isRootOp(&op)) continue;
       unsigned newGroup = numRootOps++;
+      llvm::outs() << op.getName() << " is a root op" << "\n";
       setRootAttribute(context, &op, newGroup);
-
       fuseRootsWithProducers(context, &op, newGroup, dominanceInfo,
                              aggressiveFusion);
       roots.push_back(&op);
     }
+    
     roots = llvm::to_vector(llvm::reverse(roots));
     fuseRootsWithConsumers(context, roots, dominanceInfo, aggressiveFusion);
   }
 
+  llvm::outs() << "putGenericOps\n";
   // Once all root linalg ops have been tagged, put all remaining generic ops
   // into their own dispatches.
   for (Block &block : funcOp.getFunctionBody()) {
     SmallVector<Operation *> roots;
     for (Operation &op : llvm::reverse(block)) {
       // If it is part of a fusion group or root op, ignore it.
-      if (hasFusionGroupsAttribute(&op) || hasRootOpAttribute(&op)) continue;
+      if (hasRootOpAttribute(&op)) {
+        llvm::outs() << "hasRootOpAttribute: " << op.getName() << "\n";
+      }
+      if (hasFusionGroupsAttribute(&op) || hasRootOpAttribute(&op)) {
+        continue;
+      }
       // Only look for Linalg ops here. Avoid moving `linalg.fill`,
       // `tensor.pack`, and `tensor.unpack` that aren't fused with anything else
       // into their own dispatches since it is better to convert them to splats.
@@ -683,7 +746,8 @@ static unsigned decideFusableLinalgOps(FunctionOpInterface funcOp,
           isa<linalg::FillOp>(op)) {
         continue;
       }
-
+      
+      llvm::outs() << op.getName() << " is a root op" << "\n";
       unsigned newGroup = numRootOps++;
       setRootAttribute(context, &op, newGroup);
       roots.push_back(&op);
@@ -756,6 +820,8 @@ static LogicalResult createFusionGroups(TensorDimTrackingRewriter &rewriter,
     llvm::dbgs() << "\n\n";
   });
 
+
+
   // TODO: Incrementally add ops to an empty DispatchGroupOp instead of
   // annotating fusion group IDs via attributes.
   funcOp.walk([&](Operation *op) {
@@ -813,6 +879,9 @@ static LogicalResult createFusionGroups(TensorDimTrackingRewriter &rewriter,
     }
     regionOps.push_back(regionOp);
   }
+
+  // Generate meta data file
+  GenerateMetaData(funcOp);
 
   LLVM_DEBUG({
     llvm::dbgs() << "\n--- After creating flow.dispatch.region ---\n";

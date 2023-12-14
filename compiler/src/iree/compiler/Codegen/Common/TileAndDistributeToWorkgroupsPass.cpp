@@ -334,6 +334,34 @@ void TileAndDistributeToWorkgroupsPass::runOnOperation() {
       // The entry point already has distribution to workgroups. Do nothing.
       continue;
     }
+
+    // DBG
+    llvm::outs() << "Print computeOps: \n";
+    for (Operation *op : computeOps) {
+      op->print(llvm::errs());
+      llvm::errs() << "\n";
+    }
+
+    llvm::outs() << "Print tiledLoops: \n";
+    for (const auto &info : tiledLoops) {
+      llvm::outs() << "Loop: ";
+      if (info.loop) info.loop->print(llvm::outs());
+      else llvm::outs() << "null";
+      llvm::outs() << "\n";
+
+      // For OpFoldResult, I'm assuming a hypothetical "print" method. Replace with the actual method or conversion if different.
+      llvm::outs() << "Untiled Lower Bound: " << info.untiledLowerBound << "\n";
+      llvm::outs() << "Untiled Upper Bound: " << info.untiledUpperBound << "\n";
+      llvm::outs() << "Untiled Step: " << info.untiledStep << "\n";
+      
+      llvm::outs() << "Tile Size: ";
+      if (info.tileSize) llvm::outs() << *info.tileSize;
+      else llvm::outs() << "n/a";
+      llvm::outs() << "\n";
+      
+      llvm::outs() << "Processor Distribution Dim: " << info.processorDistributionDim << "\n\n";
+    }
+
     SmallVector<int64_t> tileSizes, staticLoopRanges, interchange;
     SmallVector<unsigned> partitionableLoops;
     Operation *dispatchRootOp = nullptr;
@@ -342,6 +370,44 @@ void TileAndDistributeToWorkgroupsPass::runOnOperation() {
                                           partitionableLoops))) {
       funcOp.emitOpError("failed to get tile and distribute configuration");
       return signalPassFailure();
+    }
+
+    // DBG
+    // Print tileSizes
+    llvm::outs() << "Tile Sizes:\n";
+    for (int64_t size : tileSizes) {
+        llvm::outs() << size << " ";
+    }
+    llvm::outs() << "\n";
+
+    // Print staticLoopRanges
+    llvm::outs() << "Static Loop Ranges:\n";
+    for (int64_t range : staticLoopRanges) {
+        llvm::outs() << range << " ";
+    }
+    llvm::outs() << "\n";
+
+    // Print interchange
+    llvm::outs() << "Interchange:\n";
+    for (int64_t value : interchange) {
+        llvm::outs() << value << " ";
+    }
+    llvm::outs() << "\n";
+
+    // Print partitionableLoops
+    llvm::outs() << "Partitionable Loops:\n";
+    for (unsigned loop : partitionableLoops) {
+        llvm::outs() << loop << " ";
+    }
+    llvm::outs() << "\n";
+
+    // Optionally, if you also want to print dispatchRootOp:
+    llvm::outs() << "Dispatch Root Op:\n";
+    if (dispatchRootOp) {
+        dispatchRootOp->print(llvm::outs());
+        llvm::outs() << "\n";
+    } else {
+        llvm::outs() << "null\n";
     }
 
     // Lower the workgroup count ops.

@@ -52,6 +52,8 @@ def SPIRV_WinogradVectorize
 
 def VMVX_Default : I32EnumAttrCase<"VMVXDefault", 21>;
 
+def PIM_Matmul : I32EnumAttrCase<"PIMMatmul", 22>;
+
 
 def Linalg_TransformDialectCodegen
     : I32EnumAttrCase<"TransformDialectCodegen", 100>;
@@ -74,6 +76,7 @@ def DispatchLoweringPassPipelineEnum
                     SPIRV_MatmulPromoteVectorize, SPIRV_CooperativeMatrixVectorize,
                     SPIRV_SubgroupReduce, SPIRV_WinogradVectorize,
                     VMVX_Default,
+                    PIM_Matmul,
                     // Transform dialect based codegen
                     Linalg_TransformDialectCodegen,
                     None

@@ -19,6 +19,8 @@ iree_tablegen_library(
     --gen-pass-decls Passes.h.inc
 )
 
+find_package(jsoncpp CONFIG REQUIRED)
+
 iree_cc_library(
   NAME
     Transforms
@@ -47,6 +49,7 @@ iree_cc_library(
     "FormDispatchRegions.cpp"
     "FormDispatchWorkgroups.cpp"
     "FusionOfTensorOps.cpp"
+    "GenerateMetaData.cpp"
     "InferNumericNarrowing.cpp"
     "InitializeEmptyTensors.cpp"
     "InjectDispatchTracing.cpp"
@@ -111,6 +114,7 @@ iree_cc_library(
     iree::compiler::Dialect::Util::IR
     iree::compiler::Dialect::Util::Transforms
     iree::compiler::Utils
+    JsonCpp::JsonCpp
   PUBLIC
 )
 
